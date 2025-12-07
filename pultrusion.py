@@ -2,37 +2,39 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
-effective_composite_density = 0.0
-effective_resin_density = 0.0
-cp_effective = 0.0
+effective_composite_density = 1800
+effective_resin_density = 1200
+cp_effective = 900
 
 # KINETIC PARAMETERS
-kinetic_heating_rate = 0.0
-a0 = 0.0
-e = 0.0
+kinetic_heating_rate = 2e5
+a0 = 1e5
+e = 15e4
 r_gas = 8.314
-kinetic_exponent_n = 0.0
+kinetic_exponent_n = 1.2
 
 # PROBLEM GEOMETRY
-cross_sectional_area = 0.0
-perimeter = 0.0
-steel_thickness = 0.0
-steel_k = 0.0
-thermal_contact_resistance = 0.0
-pull_speed = 0.0
+cross_sectional_area = 2e-4
+perimeter = 0.06
+steel_thickness = 0.04
+steel_k = 20.0
+thermal_contact_resistance = 0.01
+pull_speed = 0.005
 
 # HEATING ZONES (m)
 L1 = 0.5
 L2 = 0.5
 L3 = 0.5
-T_platen_1 = 0.0
-T_platen_2 = 0.0
-T_platen_3 = 0.0
-L_total = L1 + L2 + L3
+L4 = 0.5
+T_platen_1 = 120 + 273.15
+T_platen_2 = 160 + 273.15
+T_platen_3 = 140 + 273.15
+T_platen_4 = 100 + 273.15
+L_total = L1 + L2 + L3 + L4
 
 # INLET CONDITIONS
-t_in = 0.0
-alpha_in = 0.0
+t_in = 298
+alpha_in = 0.01
 
 # TOTAL THERMAL RESISTANCE
 r_tot = (steel_thickness/steel_k) + thermal_contact_resistance
@@ -42,15 +44,18 @@ def platen_temperatures(x):
         return T_platen_1
     if x < (L1 + L2):
         return T_platen_2
-    else:
+    if x < (L1 + L2 + L3):
         return T_platen_3
+    else:
+        return T_platen_4
     
 def f_alpha(alpha):
     # KINETIC MODEL
     y = (1.0-alpha)**kinetic_exponent_n
     return y
 
-def ode_rhs(T, alpha):
+def ode_rhs(x, y):
+    T, alpha = y
     # KINETICS
     da_dx = ( (a0/pull_speed)* np.exp(-e/(r_gas*T)) ) * (f_alpha(alpha))
     
@@ -70,14 +75,20 @@ x_span = (0.0, L_total)
 y_0 = [t_in, alpha_in]
 x_eval = np.linspace(0, L_total, 500)
 
-solution = solve_ivp(ode_rhs, x_span, y_0, t_eval=x_eval, max_step=0.1)
+solution = solve_ivp(ode_rhs, x_span, y_0, t_eval=x_eval, max_step=0.01)
 
 x = solution.t
 temperatures = solution.y[0, :]
 alphas = solution.y[1, :]
 
-plt.figure
+plt.figure()
 plt.plot(x, temperatures)
 plt.xlabel("x")
 plt.ylabel("T")
+plt.show()
+
+plt.figure()
+plt.plot(x, alphas)
+plt.xlabel("x")
+plt.ylabel("a")
 plt.show()
