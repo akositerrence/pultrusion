@@ -7,9 +7,9 @@ effective_resin_density = 1200
 cp_effective = 900
 
 # KINETIC PARAMETERS
-kinetic_heating_rate = 2e5
-a0 = 1e5
-e = 15e4
+kinetic_heating_rate = 4e5
+a0 = 1e4
+e = 6e4
 r_gas = 8.314
 kinetic_exponent_n = 1.2
 
@@ -26,14 +26,14 @@ L1 = 0.5
 L2 = 0.5
 L3 = 0.5
 L4 = 0.5
-T_platen_1 = 120 + 273.15
-T_platen_2 = 160 + 273.15
-T_platen_3 = 140 + 273.15
-T_platen_4 = 100 + 273.15
+T_platen_1 = 150 + 273.15
+T_platen_2 = 200 + 273.15
+T_platen_3 = 150 + 273.15
+T_platen_4 = 40 + 273.15
 L_total = L1 + L2 + L3 + L4
 
 # INLET CONDITIONS
-t_in = 298
+t_in = 50 + 273.15
 alpha_in = 0.01
 
 # TOTAL THERMAL RESISTANCE
@@ -51,6 +51,7 @@ def platen_temperatures(x):
     
 def f_alpha(alpha):
     # KINETIC MODEL
+    alpha = np.clip(alpha, 0.0, 0.999999)
     y = (1.0-alpha)**kinetic_exponent_n
     return y
 
@@ -75,7 +76,7 @@ x_span = (0.0, L_total)
 y_0 = [t_in, alpha_in]
 x_eval = np.linspace(0, L_total, 500)
 
-solution = solve_ivp(ode_rhs, x_span, y_0, t_eval=x_eval, max_step=0.01)
+solution = solve_ivp(ode_rhs, x_span, y_0, t_eval=x_eval, max_step=0.001)
 
 x = solution.t
 temperatures = solution.y[0, :]
