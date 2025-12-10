@@ -2,30 +2,34 @@ import numpy as np
 from scipy.integrate import solve_ivp
 import matplotlib.pyplot as plt
 
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["Times New Roman"]
+
 effective_composite_density = 1800
 effective_resin_density = 1200
 cp_effective = 900
 
 # KINETIC PARAMETERS
-kinetic_heating_rate = 4e5
+kinetic_heating_rate = 175e3
 a0 = 1e4
 e = 6e4
 r_gas = 8.314
 kinetic_exponent_n = 1.2
 
 # PROBLEM GEOMETRY
-cross_sectional_area = 2e-4
-perimeter = 0.06
-steel_thickness = 0.04
+side = 0.05
+cross_sectional_area = side**2
+perimeter = side*4
+steel_thickness = 0.125
 steel_k = 20.0
 thermal_contact_resistance = 0.01
-pull_speed = 0.005
+pull_speed = 0.01667
 
 # HEATING ZONES (m)
-L1 = 0.5
-L2 = 0.5
-L3 = 0.5
-L4 = 0.5
+L1 = 0.25
+L2 = 0.25
+L3 = 0.25
+L4 = 0.25
 T_platen_1 = 150 + 273.15
 T_platen_2 = 200 + 273.15
 T_platen_3 = 150 + 273.15
@@ -84,12 +88,14 @@ alphas = solution.y[1, :]
 
 plt.figure()
 plt.plot(x, temperatures)
-plt.xlabel("x")
-plt.ylabel("T")
+plt.grid(True)
+plt.xlabel("x (m)")
+plt.ylabel("T (K)")
 plt.show()
 
 plt.figure()
 plt.plot(x, alphas)
-plt.xlabel("x")
-plt.ylabel("a")
+plt.grid(True)
+plt.xlabel("x (m)")
+plt.ylabel("α")
 plt.show()

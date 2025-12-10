@@ -2,37 +2,38 @@ import numpy as np
 from scipy.integrate import solve_bvp
 import matplotlib.pyplot as plt
 
+plt.rcParams["font.family"] = "serif"
+plt.rcParams["font.serif"] = ["Times New Roman"]
+
 effective_composite_density = 1800
 effective_resin_density = 1200
 cp_effective = 900
 
 # KINETIC PARAMETERS
-kinetic_heating_rate = 4e5
+kinetic_heating_rate = 175e3
 # kinetic_heating_rate = 0
 a0 = 1e4
-e = 6e4
+e = 60e3
 r_gas = 8.314
 kinetic_exponent_n = 1.2
 
 # PROBLEM GEOMETRY
-cross_sectional_area = 2e-4
-perimeter = 0.06
-steel_thickness = 0.04
+side = 0.05
+cross_sectional_area = side**2
+perimeter = side*4
+steel_thickness = 0.125
 steel_k = 20.0
 thermal_contact_resistance = 0.01
-pull_speed = 0.005
+pull_speed = 0.01667
 
 # HEATING ZONES (m)
-L1 = 0.5
-L2 = 0.5
-L3 = 0.5
-L4 = 0.5
-T_platen_1 = 150 + 273.15
-T_platen_2 = 200 + 273.15
-T_platen_3 = 150 + 273.15
-T_platen_4 = 40 + 273.15
+L1 = 0.25
+L2 = 0.25
+L3 = 0.25
+L4 = 0.25
+T_platen_2 = 2 + 273.15
 L_total = L1 + L2 + L3 + L4
-steel_as = 0.5*0.5
+steel_as = side * steel_thickness
 
 # INLET CONDITIONS
 t_in = 50 + 273.15
@@ -41,16 +42,16 @@ alpha_in = 0.01
 # ENVIRONMENT CONDITIONS
 t_inf = 20 + 273.15
 hi, hl = 10.0, 10.0
-a_end = 0.5*0.5
+a_end = side * steel_thickness
 
 # TOTAL THERMAL RESISTANCE
 r_tot = (steel_thickness/steel_k) + thermal_contact_resistance
 
 def q_heater(x):
-    q1 = 150.0
-    q2 = 250.0
-    q3 = 150.0
-    q4 = 0
+    q1 = 1000.0
+    q2 = 1500.0
+    q3 = 1000.0
+    q4 = 500.0
     
     x = np.asarray(x)
     out = np.empty_like(x)
@@ -88,7 +89,7 @@ def ode_right(x, y):
     
     # WALL
     dTint_dx = q
-    dq_dx = (q_heater(x) - (perimeter/r_tot) * (Tint - T)) / (steel_k * steel_as)
+    dq_dx = ((perimeter/r_tot) * (Tint - T) - q_heater(x) ) / (steel_k * steel_as)
     
     return np.vstack([dt_dx, da_dx, dTint_dx, dq_dx])
 
@@ -118,6 +119,7 @@ temperatures_interface = solution.y[2, :]
 plt.figure()
 plt.plot(x, temperatures, label="Composite Temperature")
 plt.plot(x, temperatures_interface, label="Die-Composite Interface Temperature")
+plt.grid(True)
 plt.xlabel("x (m)")
 plt.ylabel("T (K)")
 plt.legend()
@@ -125,6 +127,7 @@ plt.show()
 
 plt.figure()
 plt.plot(x, alphas, label="Degree of Cure α")
+plt.grid(True)
 plt.xlabel("x (m)")
 plt.ylabel("α")
 plt.legend()
